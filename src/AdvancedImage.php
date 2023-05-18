@@ -39,6 +39,17 @@ class AdvancedImage extends Image
     }
 
     /**
+     * Set the minimum image dimension.
+     *
+     * @param  string  $aspectRatio
+     * @return $this
+     */
+    public function imageDimensions($dimensions)
+    {
+        return $this->withMeta(['imageDimensions' => $dimensions]);
+    }
+
+    /**
      * Hydrate the given attribute on the model based on the incoming request.
      *
      * @param \Laravel\Nova\Http\Requests\NovaRequest $request

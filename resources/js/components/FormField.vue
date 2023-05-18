@@ -60,28 +60,32 @@
 </template>
 
 <script>
-import { DependentFormField, Errors, HandlesValidationErrors } from 'laravel-nova'
+import {
+  DependentFormField,
+  Errors,
+  HandlesValidationErrors,
+} from "laravel-nova";
 
-import AdvancedCropper from './AdvancedCropper.vue'
-import 'vue-advanced-cropper/dist/theme.compact.css';
+import AdvancedCropper from "./AdvancedCropper.vue";
+import "vue-advanced-cropper/dist/theme.compact.css";
 
 function createFile(file) {
   return {
     name: file.name,
-    extension: file.name.split('.').pop(),
+    extension: file.name.split(".").pop(),
     type: file.type,
     originalFile: file,
-  }
+  };
 }
 
 export default {
-  emits: ['file-deleted'],
+  emits: ["file-deleted"],
 
   props: [
-    'resourceId',
-    'relatedResourceName',
-    'relatedResourceId',
-    'viaRelationship',
+    "resourceId",
+    "relatedResourceName",
+    "relatedResourceId",
+    "viaRelationship",
   ],
 
   mixins: [HandlesValidationErrors, DependentFormField],
@@ -102,62 +106,64 @@ export default {
   }),
 
   async mounted() {
-    this.preparePreviewImage()
+    this.preparePreviewImage();
 
-    this.field.fill = formData => {
-      let attribute = this.field.attribute
+    this.field.fill = (formData) => {
+      let attribute = this.field.attribute;
 
       if (this.file) {
-        formData.append(attribute, this.file.originalFile, this.file.name)
+        console.log(file);  
+        formData.append(attribute, this.file.originalFile, this.file.name);
         if (this.field.croppable) {
-          const cropResult = this.$refs.cropper.$refs.cropper.getResult()
-          formData.append(`${attribute}_data`, JSON.stringify(cropResult))
+          const cropResult = this.$refs.cropper.$refs.cropper.getResult();
+          formData.append(`${attribute}_data`, JSON.stringify(cropResult));
         }
       }
-    }
+    };
   },
 
   methods: {
     preparePreviewImage() {
       if (this.hasValue && this.imageUrl) {
-        this.fetchPreviewImage()
+        this.fetchPreviewImage();
       }
 
       if (this.hasValue && !this.imageUrl) {
         this.previewFile = createFile({
           name: this.currentField.value,
-          type: this.currentField.value.split('.').pop(),
-        })
+          type: this.currentField.value.split(".").pop(),
+        });
       }
     },
 
     async fetchPreviewImage() {
-      let response = await fetch(this.imageUrl)
-      let data = await response.blob()
+      let response = await fetch(this.imageUrl);
+      let data = await response.blob();
 
       this.previewFile = createFile(
         new File([data], this.currentField.value, { type: data.type })
-      )
+      );
     },
 
     handleFileChange(newFiles) {
-      this.file = createFile(newFiles[0])
+      console.log(newFiles);
+      this.file = createFile(newFiles[0]);
     },
 
     removeFile() {
-      this.file = null
+      this.file = null;
     },
 
     confirmRemoval() {
-      this.removeModalOpen = true
+      this.removeModalOpen = true;
     },
 
     closeRemoveModal() {
-      this.removeModalOpen = false
+      this.removeModalOpen = false;
     },
 
     async removeUploadedFile() {
-      this.uploadErrors = new Errors()
+      this.uploadErrors = new Errors();
 
       const {
         resourceName,
@@ -165,27 +171,27 @@ export default {
         relatedResourceName,
         relatedResourceId,
         viaRelationship,
-      } = this
-      const attribute = this.field.attribute
+      } = this;
+      const attribute = this.field.attribute;
 
       const uri =
         this.viaRelationship &&
         this.relatedResourceName &&
         this.relatedResourceId
           ? `/nova-api/${resourceName}/${resourceId}/${relatedResourceName}/${relatedResourceId}/field/${attribute}?viaRelationship=${viaRelationship}`
-          : `/nova-api/${resourceName}/${resourceId}/field/${attribute}`
+          : `/nova-api/${resourceName}/${resourceId}/field/${attribute}`;
 
       try {
-        await Nova.request().delete(uri)
-        this.closeRemoveModal()
-        this.deleted = true
-        this.$emit('file-deleted')
-        Nova.success(this.__('The image was deleted!'))
+        await Nova.request().delete(uri);
+        this.closeRemoveModal();
+        this.deleted = true;
+        this.$emit("file-deleted");
+        Nova.success(this.__("The image was deleted!"));
       } catch (error) {
-        this.closeRemoveModal()
+        this.closeRemoveModal();
 
         if (error.response?.status === 422) {
-          this.uploadErrors = new Errors(error.response.data.errors)
+          this.uploadErrors = new Errors(error.response.data.errors);
         }
       }
     },
@@ -193,14 +199,14 @@ export default {
 
   computed: {
     files() {
-      return this.file ? [this.file] : []
+      return this.file ? [this.file] : [];
     },
 
     /**
      * Determine if the field has an upload error.
      */
     hasError() {
-      return this.uploadErrors.has(this.fieldAttribute)
+      return this.uploadErrors.has(this.fieldAttribute);
     },
 
     /**
@@ -208,7 +214,7 @@ export default {
      */
     firstError() {
       if (this.hasError) {
-        return this.uploadErrors.first(this.fieldAttribute)
+        return this.uploadErrors.first(this.fieldAttribute);
       }
     },
 
@@ -216,20 +222,20 @@ export default {
      * The ID attribute to use for the file field.
      */
     idAttr() {
-      return this.labelFor
+      return this.labelFor;
     },
 
     /**
      * The label attribute to use for the file field.
      */
     labelFor() {
-      let name = this.resourceName
+      let name = this.resourceName;
 
       if (this.relatedResourceName) {
-        name += '-' + this.relatedResourceName
+        name += "-" + this.relatedResourceName;
       }
 
-      return `advanced-image-${name}-${this.field.attribute}`
+      return `advanced-image-${name}-${this.field.attribute}`;
     },
 
     /**
@@ -240,36 +246,36 @@ export default {
         Boolean(this.field.value || this.imageUrl) &&
         !Boolean(this.deleted) &&
         !Boolean(this.missing)
-      )
+      );
     },
 
     /**
      * Determine whether the field should show the loader component.
      */
     shouldShowLoader() {
-      return !Boolean(this.deleted) && Boolean(this.imageUrl)
+      return !Boolean(this.deleted) && Boolean(this.imageUrl);
     },
 
     /**
      * Determine whether the file field input should be shown.
      */
     shouldShowField() {
-      return Boolean(!this.currentlyIsReadonly)
+      return Boolean(!this.currentlyIsReadonly);
     },
 
     /**
      * Determine whether the field should show the remove button.
      */
     shouldShowRemoveButton() {
-      return Boolean(this.currentField.deletable && !this.currentlyIsReadonly)
+      return Boolean(this.currentField.deletable && !this.currentlyIsReadonly);
     },
 
     /**
      * Return the preview or thumbnail URL for the field.
      */
     imageUrl() {
-      return this.currentField.previewUrl || this.currentField.thumbnailUrl
+      return this.currentField.previewUrl || this.currentField.thumbnailUrl;
     },
   },
-}
+};
 </script>
