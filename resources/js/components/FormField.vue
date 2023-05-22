@@ -120,25 +120,10 @@ export default {
       let attribute = this.field.attribute;
 
       if (this.file) {
+        formData.append(attribute, this.file.originalFile, this.file.name);
         if (this.field.croppable) {
           const cropResult = this.$refs.cropper.$refs.cropper.getResult();
-        }
-
-        this.isValidDimensions =
-          cropResult.image.width >= this.minimumWidth &&
-          cropResult.image.height >= this.minimumHeight;
-
-        if (this.isValidDimensions) {
-          formData.append(attribute, this.file.originalFile, this.file.name);
           formData.append(`${attribute}_data`, JSON.stringify(cropResult));
-        } else {
-          Nova.error(
-            "Minimalne dimenzije slike su " +
-              this.minimumWidth +
-              "*" +
-              this.minimumHeight +
-              "."
-          );
         }
       }
     };
